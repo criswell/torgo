@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 tinydb = "*"
 argparse = "*"
+pathlib = "*"
+configparser = "*"
+colorama = "*"
 
 [dev-packages]
 
