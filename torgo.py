@@ -12,6 +12,9 @@ parser.add_argument(
         "-t", "--this",
         help="Use 'this' directory, don't attempt to find org file in parents",
         action="store_true")
+parser.add_argument(
+        "-i", "--init",
+        help="Force a re-init of the configuration", action="store_true")
 args = parser.parse_args()
 
 # Attempt to load the configuration
@@ -25,6 +28,9 @@ must_init = False
 if os.path.isfile(torgo_cfg):
     cfg.read(torgo_cfg)
 else:
+    must_init = True
+
+if args.init:
     must_init = True
 
 
@@ -49,9 +55,18 @@ def init_config():
           "The editor to use, blank to use $EDITOR from environment:")
     editor = input(Style.RESET_ALL + "[] ")
 
+    print("\n" + Style.BRIGHT + Fore.GREEN +
+          "The extension to use for the Org files:")
+    ext = input(Style.RESET_ALL + "[" + Style.DIM + "org" + Style.RESET_ALL +
+                "] ")
+
+    if ext == '':
+        ext = "org"
+
     cfg['TORGO'] = {}
     cfg['TORGO']['org_dir'] = user_org
     cfg['TORGO']['editor'] = editor
+    cfg['TORGO']['ext'] = ext
     with open(torgo_cfg, 'w') as f:
         cfg.write(f)
 
