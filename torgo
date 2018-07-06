@@ -4,34 +4,8 @@ import os
 import configparser
 import argparse
 from pathlib import Path
-from colorama import init, Fore, Back, Style
+from colorama import init, Fore, Style
 from tinydb import TinyDB, Query
-
-parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
-parser.add_argument(
-        "-t", "--this",
-        help="Use 'this' directory, don't attempt to find org file in parents",
-        action="store_true")
-parser.add_argument(
-        "-i", "--init",
-        help="Force a re-init of the configuration", action="store_true")
-args = parser.parse_args()
-
-# Attempt to load the configuration
-torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
-if 'TORGO_CFG' in os.environ:
-    torgo_cfg = os.environ['TORGO_CFG']
-
-cfg = configparser.ConfigParser()
-must_init = False
-
-if os.path.isfile(torgo_cfg):
-    cfg.read(torgo_cfg)
-else:
-    must_init = True
-
-if args.init:
-    must_init = True
 
 
 def init_config():
@@ -70,6 +44,32 @@ def init_config():
     with open(torgo_cfg, 'w') as f:
         cfg.write(f)
 
+
+parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
+parser.add_argument(
+        "-t", "--this",
+        help="Use 'this' directory, don't attempt to find org file in parents",
+        action="store_true")
+parser.add_argument(
+        "-i", "--init",
+        help="Force a re-init of the configuration", action="store_true")
+args = parser.parse_args()
+
+# Attempt to load the configuration
+torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
+if 'TORGO_CFG' in os.environ:
+    torgo_cfg = os.environ['TORGO_CFG']
+
+cfg = configparser.ConfigParser()
+must_init = False
+
+if os.path.isfile(torgo_cfg):
+    cfg.read(torgo_cfg)
+else:
+    must_init = True
+
+if args.init:
+    must_init = True
 
 if must_init:
     init_config()
