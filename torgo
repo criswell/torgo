@@ -74,7 +74,7 @@ def find_org(path):
     h = org_hash
     q = Query()
 
-    while True:
+    while not args.this:
         r = db.search(q.hash == h)
         if len(r) > 0:
             return h, path
@@ -96,6 +96,9 @@ parser.add_argument(
 parser.add_argument(
         "-i", "--init",
         help="Force a re-init of the configuration", action="store_true")
+parser.add_argument(
+        "-p", "--prune",
+        help="Prune the current org file (delete it)", action="store_true")
 args = parser.parse_args()
 
 # Attempt to load the configuration
@@ -148,4 +151,9 @@ else:
 org_file = Path(cfg['TORGO']['org_dir'])
 org_file = org_file / lookup['org_file']
 
-sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
+if args.prune:
+    os.remove(org_file)
+    db.remove(qh.hash == org)
+    print("Pruned this org file")
+else:
+    sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
