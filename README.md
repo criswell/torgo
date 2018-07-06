@@ -41,4 +41,26 @@ You can force torgo to re-initialize the configuration by passing the
 
 # Why is it called Torgo?
 
+For a while, I had been using a `this.org` pattern for my ad-hoc org files.
+Say I was in a directory that was a repo for a project I was on and suddenly
+needed to take notes- I'd do a `vim .this.org` and write my notes in it. Or
+say I was configuring something in the system and needed to take notes on
+what I was doing- Again, I'd do a `vim .this.org`.
 
+This pattern worked well because I'd always be able to have contextual org-mode
+note files wherever I was. But it had a number of downsides.
+
+For one, it littered my directories with `.this.org` files. If a directory
+was a repo, I'd generally have to add `.this.org` to its ignore file. Further,
+I'd have no way to easily backup or version control all of my `.this.org` files.
+
+I created a hacky shell script that would let me have system-wide org-mode files
+in my home-directory that would be associated by hashes of the directories I
+was in. This let me keep my `this.org` pattern, but not litter my directories.
+It also let me version control my `this.org` files and back them up easily.
+
+Originally, this shell script was called `torg` (from `this.org`). As I started
+refining it, and extending it, I eventually decided I should re-write it in
+Python. Since I was a MST3k fan, and since Manos The Hands of Fate is the
+greatest movie of all time, it was an easy leap to go from `this.org`, to `torg`,
+to `torgo`.
