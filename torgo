@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import errno
 import configparser
 import argparse
 from pathlib import Path
@@ -45,6 +47,15 @@ def init_config():
         cfg.write(f)
 
 
+def mkdir_p(path):
+    """ Equivalent of mkdir -p """
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+
+
 parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
 parser.add_argument(
         "-t", "--this",
@@ -68,8 +79,18 @@ if os.path.isfile(torgo_cfg):
 else:
     must_init = True
 
-if args.init:
-    must_init = True
-
-if must_init:
+if must_init or args.init:
     init_config()
+
+editor = cfg['TORGO']['editor']
+if editor == '':
+    if 'EDITOR' in os.environ:
+        editor = os.environ['EDITOR']
+    else:
+        print(Style.RESET_ALL + Style.BRIGHT + Fore.RED +
+              "ERROR, NO EDITOR FOUND!" + Style.RESET_ALL)
+        print("\nPlease set your editor either in the config " +
+              "file '{0}' or".format(torgo_cfg))
+        print("in the environment variable $EDITOR.")
+        print("\nYou can re-run torgo with '-i' to force re-initialization")
+        sys.exit(1)
