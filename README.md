@@ -39,6 +39,26 @@ to `~/.torgo/`.
 You can force torgo to re-initialize the configuration by passing the
 `-i`/`--init` option.
 
+## How does it work?
+
+Perhaps the best way to understand how to use torgo, is to see how it works.
+
+When torgo is run, it starts in the current working directory and checks if
+an org file entry exists for that directory in its flat database file (by
+default, this is `~/.torgo/org_lookup_db.json`. If no org-file is found, it
+steps up to the parent directory and checks there. It repeats this until it
+either finds an org file or reaches root. If it reaches root, than it takes
+the original working directory as the one for the org-mode.
+
+*Note: You can force it to use the current working directory by passing the
+`-t`/`--this` parameter.*
+
+Once it has the appropriate org-mode file it fires up your editor of choice
+on that file. You edit the file, take your notes or whatever, and save it.
+
+The next time you fire up torgo in that same directory (or in a sub-directory)
+it will load the same org-mode file.
+
 # Why is it called Torgo?
 
 For a while, I had been using a `this.org` pattern for my ad-hoc org files.
