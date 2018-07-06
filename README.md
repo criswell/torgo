@@ -47,7 +47,7 @@ When torgo is run, it starts in the current working directory and checks if
 an org file entry exists for that directory in its flat database file (by
 default, this is `~/.torgo/org_lookup_db.json`). If no org-file is found, it
 steps up to the parent directory and checks there. It repeats this until it
-either finds an org file or reaches root. If it reaches root, than it takes
+either finds an org file or reaches root. If it reaches root, then it takes
 the original working directory as the one for the org-mode.
 
 *Note: You can force it to use the current working directory by passing the
