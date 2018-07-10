@@ -5,10 +5,21 @@ import sys
 import errno
 import configparser
 import argparse
+import textwrap
+import subprocess
 from hashlib import blake2b
 from pathlib import Path
 from colorama import init, Fore, Style
 from tinydb import TinyDB, Query
+
+
+def get_max_columns():
+    max_columns = None
+    try:
+        max_columns = subprocess.check_output(['tput', 'cols'])
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        max_columns = os.environ.get('COLUMNS', 70)
+    return int(max_columns)
 
 
 def init_config():
@@ -88,7 +99,52 @@ def find_org(path):
     return org_hash, orig_path
 
 
+# The commands
+def cmd_tag():
+    """ The tag command function. """
+    all_tags = []
+    if 'tags' in lookup:
+        all_tags = lookup['tags']
+    if args.param:
+        tags = args.param.split(',')
+        for t in tags:
+            if t.startswith('.'):
+                temp_t = t.lstrip('.')
+                if temp_t in all_tags:
+                    all_tags.remove(temp_t)
+            else:
+                if t not in all_tags:
+                    all_tags.append(t)
+
+        lookup['tags'] = all_tags
+        q = Query()
+        db.update(lookup, q.hash == lookup['hash'])
+    else:
+        if len(all_tags) > 0:
+            print("The tags associated with this org file:")
+            for t in all_tags:
+                print("\t{0}".format(t))
+        else:
+            print("No tags associated with this org file.")
+
+
+commands = {
+        'tag': {
+            'method': cmd_tag,
+            'desc': 'Sets or unsets a tag for the given org file. The ' +
+                    'parameters are a comma separated list of tags to set ' +
+                    'or unset. If called with no options, will list the ' +
+                    'tags. If tag is prefixed with a ".", it will unset tag.'
+                }
+        }
+
 parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
+parser.add_argument("command", help="The command to run", nargs='?')
+parser.add_argument("param", help="Optional param for commands, see " +
+                    "commands list for more information", nargs='?')
+parser.add_argument(
+        "-l", "--list", help="List the commands available",
+        action="store_true")
 parser.add_argument(
         "-t", "--this",
         help="Use 'this' directory, don't attempt to find org file in parents",
@@ -100,6 +156,17 @@ parser.add_argument(
         "-p", "--prune",
         help="Prune the current org file (delete it)", action="store_true")
 args = parser.parse_args()
+
+
+if args.list:
+    key_len = len(max(commands.keys(), key=len))
+    desc_len = get_max_columns() - 5 - key_len
+    for cmd in sorted(commands.keys()):
+        desc = textwrap.wrap(commands[cmd]['desc'], desc_len)
+        print('  {0} : {1}'.format(cmd.rjust(key_len), desc[0]))
+        for i in range(1, len(desc)):
+            print(' ' * (5 + key_len) + '{0}'.format(desc[i]))
+    sys.exit(0)
 
 # Attempt to load the configuration
 torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
@@ -151,9 +218,12 @@ else:
 org_file = Path(cfg['TORGO']['org_dir'])
 org_file = org_file / lookup['org_file']
 
-if args.prune:
-    os.remove(org_file)
-    db.remove(qh.hash == org)
-    print("Pruned this org file")
+if args.command in commands:
+    commands[args.command]['method']()
 else:
-    sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
+    if args.prune:
+        os.remove(org_file)
+        db.remove(qh.hash == org)
+        print("Pruned this org file")
+    else:
+        sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))

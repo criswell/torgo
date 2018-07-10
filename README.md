@@ -7,12 +7,18 @@ managed externally.
 # Usage
 
 ```
-usage: torgo [-h] [-t] [-i] [-p]
+usage: torgo [-h] [-l] [-t] [-i] [-p] [command] [param]
 
 Org-file anywhere, managed
 
+positional arguments:
+  command      The command to run
+  param        Optional param for commands, see commands list for more
+               information
+
 optional arguments:
   -h, --help   show this help message and exit
+  -l, --list   List the commands available
   -t, --this   Use 'this' directory, don't attempt to find org file in parents
   -i, --init   Force a re-init of the configuration
   -p, --prune  Prune the current org file (delete it)
@@ -58,6 +64,27 @@ on that file. You edit the file, take your notes or whatever, and save it.
 
 The next time you fire up torgo in that same directory (or in a sub-directory)
 it will load the same org-mode file.
+
+### Tagging
+
+Each org file can be tagged with any number of tags. To set or unset the tags,
+use the `tag` command. Tags are a comma-separated list of parameters after
+the tag command. Tags with a `.` (period/dot) prefix will be unset. To list
+the tags for a given org file, call tag without any parameters.
+
+'''
+> torgo tag foo,bar,baz
+> torgo tag
+The tags associated with this org file:
+	foo
+    bar
+    baz
+> torgo tag .bar
+> torgo tag
+The tags associated with this org file:
+	foo
+    baz
+```
 
 # Why is it called Torgo?
 
