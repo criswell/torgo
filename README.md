@@ -76,13 +76,13 @@ the tags for a given org file, call tag without any parameters.
 > torgo tag foo,bar,baz
 > torgo tag
 The tags associated with this org file:
-	foo
+    foo
     bar
     baz
 > torgo tag .bar
 > torgo tag
 The tags associated with this org file:
-	foo
+    foo
     baz
 ```
 
