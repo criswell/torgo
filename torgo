@@ -7,6 +7,7 @@ import configparser
 import argparse
 import textwrap
 import subprocess
+import pprint
 from hashlib import blake2b
 from pathlib import Path
 from colorama import init, Fore, Style
@@ -128,6 +129,13 @@ def cmd_tag():
             print("No tags associated with this org file.")
 
 
+def cmd_info():
+    """ Prints information about this org file """
+    print("The information about this org file is as follows:")
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(lookup)
+
+
 commands = {
         'tag': {
             'method': cmd_tag,
@@ -135,7 +143,11 @@ commands = {
                     'parameters are a comma separated list of tags to set ' +
                     'or unset. If called with no options, will list the ' +
                     'tags. If tag is prefixed with a ".", it will unset tag.'
-                }
+                },
+        'info': {
+            'method': cmd_info,
+            'desc': 'Prints the information for the given org file.'
+            }
         }
 
 parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
