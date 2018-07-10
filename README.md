@@ -72,7 +72,7 @@ use the `tag` command. Tags are a comma-separated list of parameters after
 the tag command. Tags with a `.` (period/dot) prefix will be unset. To list
 the tags for a given org file, call tag without any parameters.
 
-'''
+```
 > torgo tag foo,bar,baz
 > torgo tag
 The tags associated with this org file:
