@@ -177,7 +177,7 @@ def cmd_search():
             tags = set(sparm.split(','))
             recs = db.search(qs.tags.any(tags))
             if len(recs) > 0:
-                print("Found {0} records with the following tags:".format(
+                print("Found {0} record(s) with the following tag(s):".format(
                       len(recs)))
                 for t in tags:
                     print("\t{0}".format(t))
