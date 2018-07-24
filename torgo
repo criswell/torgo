@@ -285,6 +285,9 @@ if args.command in commands:
 else:
     if args.prune:
         # FIXME : We need to not fail if org-file isnt there
+        if lookup:
+            org_file = Path(cfg['TORGO']['org_dir'])
+            org_file = org_file / lookup['org_file']
         os.remove(org_file)
         db.remove(qh.hash == org)
         print("Pruned this org file")
