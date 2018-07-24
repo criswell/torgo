@@ -101,6 +101,13 @@ Path: /home/sam/work/bigdeal | [bar, work]
 Path: /home/sam/meh | [oss, github, dotfiles, foo, bar]
 ```
 
+### Does it have to be org-mode files?
+
+No! Simply change the `ext` in the configuration file to whatever extension
+you'd like. Torgo doesn't force any file type on you, it just manages the
+files associated with your directories. If you would rather take your notes
+in Markdown, plain-text, or anything else, you're free to do so.
+
 # Why is it called Torgo?
 
 For a while, I had been using a `this.org` pattern for my ad-hoc org files.
