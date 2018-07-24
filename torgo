@@ -330,7 +330,7 @@ else:
                 'path': str(path),
                 'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
                 }
-        db.insert(lookup)
+            db.insert(lookup)
         org_file = Path(cfg['TORGO']['org_dir'])
         org_file = org_file / lookup['org_file']
         sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
