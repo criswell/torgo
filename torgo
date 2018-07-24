@@ -104,6 +104,10 @@ def find_org(path):
 def cmd_tag():
     """ The tag command function. """
     all_tags = []
+    if lookup is None:
+        print("Error, no org file here. Please create tags after you have " +
+              "actually created an org file (after you first edit it)")
+        sys.exit(1)
     if 'tags' in lookup:
         all_tags = lookup['tags']
     if args.param:
@@ -132,9 +136,12 @@ def cmd_tag():
 
 def cmd_info():
     """ Prints information about this org file """
-    print("The information about this org file is as follows:")
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(lookup)
+    if lookup is None:
+        print("There is no org file associated with this directory.")
+    else:
+        print("The information about this org file is as follows:")
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(lookup)
 
 
 def print_search_params():
@@ -271,22 +278,7 @@ db = TinyDB('{0}/org_lookup_db.json'.format(cfg['TORGO']['org_dir']))
 org, path = find_org(Path.cwd())
 
 qh = Query()
-# FIXME: This should probably be get instead of search...
-lookup = db.search(qh.hash == org)
-# FIXME : If we're just searching or doing info, we probably don't want to
-# go ahead and create an entry...
-if len(lookup) == 0:
-    lookup = {
-            'hash': org,
-            'path': str(path),
-            'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
-            }
-    db.insert(lookup)
-else:
-    lookup = lookup[0]  # We only care about first
-
-org_file = Path(cfg['TORGO']['org_dir'])
-org_file = org_file / lookup['org_file']
+lookup = db.get(qh.hash == org)
 
 if args.command in commands:
     commands[args.command]['method']()
@@ -297,4 +289,13 @@ else:
         db.remove(qh.hash == org)
         print("Pruned this org file")
     else:
+        if lookup is None:
+            lookup = {
+                'hash': org,
+                'path': str(path),
+                'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
+                }
+        db.insert(lookup)
+        org_file = Path(cfg['TORGO']['org_dir'])
+        org_file = org_file / lookup['org_file']
         sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
