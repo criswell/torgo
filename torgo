@@ -119,6 +119,7 @@ def cmd_tag():
 
         lookup['tags'] = all_tags
         q = Query()
+        # FIXME : update or upsert?
         db.update(lookup, q.hash == lookup['hash'])
     else:
         if len(all_tags) > 0:
@@ -136,6 +137,55 @@ def cmd_info():
     pp.pprint(lookup)
 
 
+def print_search_params():
+    """ Print the search parameter instructions """
+    print("\nPlease include one of the following:")
+    print("\ttag=tags\tWhere 'tags' is a comma separated list of tags " +
+          "search for.")
+
+def highlight_tags(r, tags):
+    """ Given a record, and tags, highlight the tags, returning a string """
+    s = Style.RESET_ALL + "["
+    th = []
+    for t in r['tags']:
+        if t in tags:
+            th.append(Style.BRIGHT + Fore.YELLOW + t + Style.RESET_ALL)
+        else:
+            th.append(t)
+
+    return s + ", ".join(th) + "]"
+
+
+def cmd_search():
+    """ Searches the data base (and org files?) for something """
+    if args.param:
+        qs = Query()
+        try:
+            (stype, sparm) = args.param.split("=")
+        except ValueError as exc:
+            print("Error trying to unpack search parameters!")
+            print_search_params()
+            sys.exit(1)
+        if stype == 'tag':
+            tags = set(sparm.split(','))
+            recs = db.search(qs.tags.any(tags))
+            if len(recs) > 0:
+                print("Found {0} records with the following tags:".format(
+                      len(recs)))
+                for t in tags:
+                    print("\t{0}".format(t))
+                print()
+                for r in recs:
+                    print("Path: {0} | {1}".format(r['path'],
+                          highlight_tags(r, tags)))
+            else:
+                print("Found 0 records...")
+    else:
+        print("No search parameter found!")
+        print_search_params()
+        sys.exit(1)
+
+
 commands = {
         'tag': {
             'method': cmd_tag,
@@ -147,6 +197,11 @@ commands = {
         'info': {
             'method': cmd_info,
             'desc': 'Prints the information for the given org file.'
+            },
+        'search': {
+            'method' : cmd_search,
+            'desc': 'Search functionality. Use "tag=" followed by a comma ' +
+                    'separated list of tags to search.'
             }
         }
 
@@ -216,7 +271,10 @@ db = TinyDB('{0}/org_lookup_db.json'.format(cfg['TORGO']['org_dir']))
 org, path = find_org(Path.cwd())
 
 qh = Query()
+# FIXME: This should probably be get instead of search...
 lookup = db.search(qh.hash == org)
+# FIXME : If we're just searching or doing info, we probably don't want to
+# go ahead and create an entry...
 if len(lookup) == 0:
     lookup = {
             'hash': org,
@@ -234,6 +292,7 @@ if args.command in commands:
     commands[args.command]['method']()
 else:
     if args.prune:
+        # FIXME : We need to not fail if org-file isnt there
         os.remove(org_file)
         db.remove(qh.hash == org)
         print("Pruned this org file")

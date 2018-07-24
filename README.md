@@ -86,6 +86,21 @@ The tags associated with this org file:
     baz
 ```
 
+Once tagged, you can search for all the paths which have org files associated
+with a given list of tags using the `search` command using a list of tags as
+its parameter.
+
+```
+> torgo search tag=foo,bar
+Found 3 records with the following tags:
+	foo
+	bar
+
+Path: /home/sam/work/torgo | [oss, python, foo]
+Path: /home/sam/work/bigdeal | [bar, work]
+Path: /home/sam/meh | [oss, github, dotfiles, foo, bar]
+```
+
 # Why is it called Torgo?
 
 For a while, I had been using a `this.org` pattern for my ad-hoc org files.
