@@ -222,7 +222,7 @@ commands = {
         'search': {
             'method' : cmd_search,
             'desc': 'Search functionality. Use "tag=" followed by a comma ' +
-                    'separated list of tags to search. Use "all=" to list ' +
+                    'separated list of tags to search. Use "all" to list ' +
                     'all known org files.'
             }
         }
