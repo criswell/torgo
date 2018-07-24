@@ -149,6 +149,7 @@ def print_search_params():
     print("\nPlease include one of the following:")
     print("\ttag=tags\tWhere 'tags' is a comma separated list of tags " +
           "search for.")
+    print("\tall\tTo list all the org file records.")
 
 def highlight_tags(r, tags):
     """ Given a record, and tags, highlight the tags, returning a string """
@@ -170,10 +171,14 @@ def cmd_search():
         try:
             (stype, sparm) = args.param.split("=")
         except ValueError as exc:
-            print("Error trying to unpack search parameters!")
-            print_search_params()
-            sys.exit(1)
+            # Hopefully a single search type
+            stype = args.param
+            sparm = None
         if stype == 'tag':
+            if sparm is None:
+                print("No tags to sarch with!")
+                print_search_params()
+                sys.exit(1)
             tags = set(sparm.split(','))
             recs = db.search(qs.tags.any(tags))
             if len(recs) > 0:
@@ -187,6 +192,15 @@ def cmd_search():
                           highlight_tags(r, tags)))
             else:
                 print("Found 0 records...")
+        elif stype == 'all':
+            # This may suck if the thing is huge...
+            print("There are {0} org files being managed.\n".format(len(db)))
+            for r in db.all():
+                print("Path: {0}".format(r['path']))
+        else:
+            print("Unknown search type '{0}'".format(stype))
+            print_search_params()
+            sys.exit(1)
     else:
         print("No search parameter found!")
         print_search_params()
@@ -208,7 +222,8 @@ commands = {
         'search': {
             'method' : cmd_search,
             'desc': 'Search functionality. Use "tag=" followed by a comma ' +
-                    'separated list of tags to search.'
+                    'separated list of tags to search. Use "all=" to list ' +
+                    'all known org files.'
             }
         }
 
