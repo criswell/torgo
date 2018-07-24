@@ -284,11 +284,28 @@ if args.command in commands:
     commands[args.command]['method']()
 else:
     if args.prune:
-        # FIXME : We need to not fail if org-file isnt there
         if lookup:
             org_file = Path(cfg['TORGO']['org_dir'])
             org_file = org_file / lookup['org_file']
-        os.remove(org_file)
+        else:
+            print("No org file associated with this directory, nothing to " +
+                  "prune.")
+            sys.exit()
+
+        while True:
+            yn = input("Prune this org file? (yes/NO): ")
+            if yn.lower() == "yes":
+                break
+            else:
+                print("Prune cancelled...")
+                sys.exit()
+        try:
+            os.remove(org_file)
+        except FileNotFoundError:
+            # This could happen if they fired up torgo, then didn't edit
+            # or save the org file. So it shouldn't be anything more than a
+            # warning.
+            print("WARN: Tried to remove the org file, but it wasn't found.")
         db.remove(qh.hash == org)
         print("Pruned this org file")
     else:
