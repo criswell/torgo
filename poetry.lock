@@ -43,8 +43,8 @@ python-versions = "*"
 version = "3.15.2"
 
 [metadata]
-content-hash = "52d2c652e0202931d964b08ce3e35dad701e8ac8119745c17068e878b326847f"
-python-versions = "^3.8"
+content-hash = "25ccbb00babd60ae0d46383348a6213eab42d3d9d71947632e5882326bd6ddc7"
+python-versions = "^3.6"
 
 [metadata.files]
 argparse = [
