@@ -27,27 +27,37 @@ def init_config():
     """ Initializes the config (will wipe-out anything there)"""
     init()
 
-    print(Style.RESET_ALL + Style.BRIGHT +
-          "TORGO CONFIGURATION INITIALIZATION\n")
-    print(Style.RESET_ALL +
-          "Please enter your desired configuration settings,")
+    print(
+        Style.RESET_ALL + Style.BRIGHT + "TORGO CONFIGURATION INITIALIZATION\n"
+    )
+    print(Style.RESET_ALL + "Please enter your desired configuration settings,")
     print("defaults are in hard brackets\n")
 
     print(Style.BRIGHT + Fore.GREEN + "Torgo Org Directory:")
     org_dir = "{0}/.torgo".format(str(Path.home()))
-    user_org = input(Style.RESET_ALL +
-                     "[" + Style.DIM + org_dir + Style.RESET_ALL + "] ")
+    user_org = input(
+        Style.RESET_ALL + "[" + Style.DIM + org_dir + Style.RESET_ALL + "] "
+    )
     if user_org == '':
         user_org = org_dir
 
-    print("\n" + Style.BRIGHT + Fore.GREEN +
-          "The editor to use, blank to use $EDITOR from environment:")
+    print(
+        "\n"
+        + Style.BRIGHT
+        + Fore.GREEN
+        + "The editor to use, blank to use $EDITOR from environment:"
+    )
     editor = input(Style.RESET_ALL + "[] ")
 
-    print("\n" + Style.BRIGHT + Fore.GREEN +
-          "The extension to use for the Org files:")
-    ext = input(Style.RESET_ALL + "[" + Style.DIM + "org" + Style.RESET_ALL +
-                "] ")
+    print(
+        "\n"
+        + Style.BRIGHT
+        + Fore.GREEN
+        + "The extension to use for the Org files:"
+    )
+    ext = input(
+        Style.RESET_ALL + "[" + Style.DIM + "org" + Style.RESET_ALL + "] "
+    )
 
     if ext == '':
         ext = "org"
@@ -105,8 +115,10 @@ def cmd_tag():
     """ The tag command function. """
     all_tags = []
     if lookup is None:
-        print("Error, no org file here. Please create tags after you have " +
-              "actually created an org file (after you first edit it)")
+        print(
+            "Error, no org file here. Please create tags after you have "
+            + "actually created an org file (after you first edit it)"
+        )
         sys.exit(1)
     if 'tags' in lookup:
         all_tags = lookup['tags']
@@ -147,9 +159,12 @@ def cmd_info():
 def print_search_params():
     """ Print the search parameter instructions """
     print("\nPlease include one of the following:")
-    print("\ttag=tags\tWhere 'tags' is a comma separated list of tags " +
-          "search for.")
+    print(
+        "\ttag=tags\tWhere 'tags' is a comma separated list of tags "
+        + "search for."
+    )
     print("\tall\tTo list all the org file records.")
+
 
 def highlight_tags(r, tags):
     """ Given a record, and tags, highlight the tags, returning a string """
@@ -182,14 +197,20 @@ def cmd_search():
             tags = set(sparm.split(','))
             recs = db.search(qs.tags.any(tags))
             if len(recs) > 0:
-                print("Found {0} record(s) with the following tag(s):".format(
-                      len(recs)))
+                print(
+                    "Found {0} record(s) with the following tag(s):".format(
+                        len(recs)
+                    )
+                )
                 for t in tags:
                     print("\t{0}".format(t))
                 print()
                 for r in recs:
-                    print("Path: {0} | {1}".format(r['path'],
-                          highlight_tags(r, tags)))
+                    print(
+                        "Path: {0} | {1}".format(
+                            r['path'], highlight_tags(r, tags)
+                        )
+                    )
             else:
                 print("Found 0 records...")
         elif stype == 'all':
@@ -209,44 +230,55 @@ def cmd_search():
 
 def main():
     commands = {
-            'tag': {
-                'method': cmd_tag,
-                'desc': 'Sets or unsets a tag for the given org file. The ' +
-                        'parameters are a comma separated list of tags to set ' +
-                        'or unset. If called with no options, will list the ' +
-                        'tags. If tag is prefixed with a ".", it will unset tag.'
-                    },
-            'info': {
-                'method': cmd_info,
-                'desc': 'Prints the information for the given org file.'
-                },
-            'search': {
-                'method' : cmd_search,
-                'desc': 'Search functionality. Use "tag=" followed by a comma ' +
-                        'separated list of tags to search. Use "all" to list ' +
-                        'all known org files.'
-                }
-            }
+        'tag': {
+            'method': cmd_tag,
+            'desc': 'Sets or unsets a tag for the given org file. The '
+            + 'parameters are a comma separated list of tags to set '
+            + 'or unset. If called with no options, will list the '
+            + 'tags. If tag is prefixed with a ".", it will unset tag.',
+        },
+        'info': {
+            'method': cmd_info,
+            'desc': 'Prints the information for the given org file.',
+        },
+        'search': {
+            'method': cmd_search,
+            'desc': 'Search functionality. Use "tag=" followed by a comma '
+            + 'separated list of tags to search. Use "all" to list '
+            + 'all known org files.',
+        },
+    }
 
     parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
     parser.add_argument("command", help="The command to run", nargs='?')
-    parser.add_argument("param", help="Optional param for commands, see " +
-                        "commands list for more information", nargs='?')
     parser.add_argument(
-            "-l", "--list", help="List the commands available",
-            action="store_true")
+        "param",
+        help="Optional param for commands, see "
+        + "commands list for more information",
+        nargs='?',
+    )
     parser.add_argument(
-            "-t", "--this",
-            help="Use 'this' directory, don't attempt to find org file in parents",
-            action="store_true")
+        "-l", "--list", help="List the commands available", action="store_true"
+    )
     parser.add_argument(
-            "-i", "--init",
-            help="Force a re-init of the configuration", action="store_true")
+        "-t",
+        "--this",
+        help="Use 'this' directory, don't attempt to find org file in parents",
+        action="store_true",
+    )
     parser.add_argument(
-            "-p", "--prune",
-            help="Prune the current org file (delete it)", action="store_true")
+        "-i",
+        "--init",
+        help="Force a re-init of the configuration",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-p",
+        "--prune",
+        help="Prune the current org file (delete it)",
+        action="store_true",
+    )
     args = parser.parse_args()
-
 
     if args.list:
         key_len = len(max(commands.keys(), key=len))
@@ -279,10 +311,17 @@ def main():
         if 'EDITOR' in os.environ:
             editor = os.environ['EDITOR']
         else:
-            print(Style.RESET_ALL + Style.BRIGHT + Fore.RED +
-                  "ERROR, NO EDITOR FOUND!" + Style.RESET_ALL)
-            print("\nPlease set your editor either in the config " +
-                  "file '{0}' or".format(torgo_cfg))
+            print(
+                Style.RESET_ALL
+                + Style.BRIGHT
+                + Fore.RED
+                + "ERROR, NO EDITOR FOUND!"
+                + Style.RESET_ALL
+            )
+            print(
+                "\nPlease set your editor either in the config "
+                + "file '{0}' or".format(torgo_cfg)
+            )
             print("in the environment variable $EDITOR.")
             print("\nYou can re-run torgo with '-i' to force re-initialization")
             sys.exit(1)
@@ -304,8 +343,10 @@ def main():
                 org_file = Path(cfg['TORGO']['org_dir'])
                 org_file = org_file / lookup['org_file']
             else:
-                print("No org file associated with this directory, nothing to " +
-                      "prune.")
+                print(
+                    "No org file associated with this directory, nothing to "
+                    + "prune."
+                )
                 sys.exit()
 
             while True:
@@ -321,7 +362,9 @@ def main():
                 # This could happen if they fired up torgo, then didn't edit
                 # or save the org file. So it shouldn't be anything more than a
                 # warning.
-                print("WARN: Tried to remove the org file, but it wasn't found.")
+                print(
+                    "WARN: Tried to remove the org file, but it wasn't found."
+                )
             db.remove(qh.hash == org)
             print("Pruned this org file")
         else:
@@ -329,8 +372,8 @@ def main():
                 lookup = {
                     'hash': org,
                     'path': str(path),
-                    'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
-                    }
+                    'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext']),
+                }
                 db.insert(lookup)
             org_file = Path(cfg['TORGO']['org_dir'])
             org_file = org_file / lookup['org_file']
