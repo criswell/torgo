@@ -1,6 +1,6 @@
 <p align="center"><img src="torgo.jpg" /></p>
 
-![](https://github.com/criswell/torgo/workflows/.github/workflows/main.yml/badge.svg)
+![](https://github.com/criswell/torgo/workflows/CI/badge.svg)
 
 Torgo is the system-wide org file manager. It allows you to create org-mode
 files that are associated with whatever directory you are in, but which are
