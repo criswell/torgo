@@ -207,130 +207,131 @@ def cmd_search():
         sys.exit(1)
 
 
-commands = {
-        'tag': {
-            'method': cmd_tag,
-            'desc': 'Sets or unsets a tag for the given org file. The ' +
-                    'parameters are a comma separated list of tags to set ' +
-                    'or unset. If called with no options, will list the ' +
-                    'tags. If tag is prefixed with a ".", it will unset tag.'
+def main():
+    commands = {
+            'tag': {
+                'method': cmd_tag,
+                'desc': 'Sets or unsets a tag for the given org file. The ' +
+                        'parameters are a comma separated list of tags to set ' +
+                        'or unset. If called with no options, will list the ' +
+                        'tags. If tag is prefixed with a ".", it will unset tag.'
+                    },
+            'info': {
+                'method': cmd_info,
+                'desc': 'Prints the information for the given org file.'
                 },
-        'info': {
-            'method': cmd_info,
-            'desc': 'Prints the information for the given org file.'
-            },
-        'search': {
-            'method' : cmd_search,
-            'desc': 'Search functionality. Use "tag=" followed by a comma ' +
-                    'separated list of tags to search. Use "all" to list ' +
-                    'all known org files.'
+            'search': {
+                'method' : cmd_search,
+                'desc': 'Search functionality. Use "tag=" followed by a comma ' +
+                        'separated list of tags to search. Use "all" to list ' +
+                        'all known org files.'
+                }
             }
-        }
 
-parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
-parser.add_argument("command", help="The command to run", nargs='?')
-parser.add_argument("param", help="Optional param for commands, see " +
-                    "commands list for more information", nargs='?')
-parser.add_argument(
-        "-l", "--list", help="List the commands available",
-        action="store_true")
-parser.add_argument(
-        "-t", "--this",
-        help="Use 'this' directory, don't attempt to find org file in parents",
-        action="store_true")
-parser.add_argument(
-        "-i", "--init",
-        help="Force a re-init of the configuration", action="store_true")
-parser.add_argument(
-        "-p", "--prune",
-        help="Prune the current org file (delete it)", action="store_true")
-args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
+    parser.add_argument("command", help="The command to run", nargs='?')
+    parser.add_argument("param", help="Optional param for commands, see " +
+                        "commands list for more information", nargs='?')
+    parser.add_argument(
+            "-l", "--list", help="List the commands available",
+            action="store_true")
+    parser.add_argument(
+            "-t", "--this",
+            help="Use 'this' directory, don't attempt to find org file in parents",
+            action="store_true")
+    parser.add_argument(
+            "-i", "--init",
+            help="Force a re-init of the configuration", action="store_true")
+    parser.add_argument(
+            "-p", "--prune",
+            help="Prune the current org file (delete it)", action="store_true")
+    args = parser.parse_args()
 
 
-if args.list:
-    key_len = len(max(commands.keys(), key=len))
-    desc_len = get_max_columns() - 5 - key_len
-    for cmd in sorted(commands.keys()):
-        desc = textwrap.wrap(commands[cmd]['desc'], desc_len)
-        print('  {0} : {1}'.format(cmd.rjust(key_len), desc[0]))
-        for i in range(1, len(desc)):
-            print(' ' * (5 + key_len) + '{0}'.format(desc[i]))
-    sys.exit(0)
+    if args.list:
+        key_len = len(max(commands.keys(), key=len))
+        desc_len = get_max_columns() - 5 - key_len
+        for cmd in sorted(commands.keys()):
+            desc = textwrap.wrap(commands[cmd]['desc'], desc_len)
+            print('  {0} : {1}'.format(cmd.rjust(key_len), desc[0]))
+            for i in range(1, len(desc)):
+                print(' ' * (5 + key_len) + '{0}'.format(desc[i]))
+        sys.exit(0)
 
-# Attempt to load the configuration
-torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
-if 'TORGO_CFG' in os.environ:
-    torgo_cfg = os.environ['TORGO_CFG']
+    # Attempt to load the configuration
+    torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
+    if 'TORGO_CFG' in os.environ:
+        torgo_cfg = os.environ['TORGO_CFG']
 
-cfg = configparser.ConfigParser()
-must_init = False
+    cfg = configparser.ConfigParser()
+    must_init = False
 
-if os.path.isfile(torgo_cfg):
-    cfg.read(torgo_cfg)
-else:
-    must_init = True
-
-if must_init or args.init:
-    init_config()
-
-editor = cfg['TORGO']['editor']
-if editor == '':
-    if 'EDITOR' in os.environ:
-        editor = os.environ['EDITOR']
+    if os.path.isfile(torgo_cfg):
+        cfg.read(torgo_cfg)
     else:
-        print(Style.RESET_ALL + Style.BRIGHT + Fore.RED +
-              "ERROR, NO EDITOR FOUND!" + Style.RESET_ALL)
-        print("\nPlease set your editor either in the config " +
-              "file '{0}' or".format(torgo_cfg))
-        print("in the environment variable $EDITOR.")
-        print("\nYou can re-run torgo with '-i' to force re-initialization")
-        sys.exit(1)
+        must_init = True
 
-mkdir_p(cfg['TORGO']['org_dir'])
+    if must_init or args.init:
+        init_config()
 
-db = TinyDB('{0}/org_lookup_db.json'.format(cfg['TORGO']['org_dir']))
+    editor = cfg['TORGO']['editor']
+    if editor == '':
+        if 'EDITOR' in os.environ:
+            editor = os.environ['EDITOR']
+        else:
+            print(Style.RESET_ALL + Style.BRIGHT + Fore.RED +
+                  "ERROR, NO EDITOR FOUND!" + Style.RESET_ALL)
+            print("\nPlease set your editor either in the config " +
+                  "file '{0}' or".format(torgo_cfg))
+            print("in the environment variable $EDITOR.")
+            print("\nYou can re-run torgo with '-i' to force re-initialization")
+            sys.exit(1)
 
-org, path = find_org(Path.cwd())
+    mkdir_p(cfg['TORGO']['org_dir'])
 
-qh = Query()
-lookup = db.get(qh.hash == org)
+    db = TinyDB('{0}/org_lookup_db.json'.format(cfg['TORGO']['org_dir']))
 
-if args.command in commands:
-    commands[args.command]['method']()
-else:
-    if args.prune:
-        if lookup:
+    org, path = find_org(Path.cwd())
+
+    qh = Query()
+    lookup = db.get(qh.hash == org)
+
+    if args.command in commands:
+        commands[args.command]['method']()
+    else:
+        if args.prune:
+            if lookup:
+                org_file = Path(cfg['TORGO']['org_dir'])
+                org_file = org_file / lookup['org_file']
+            else:
+                print("No org file associated with this directory, nothing to " +
+                      "prune.")
+                sys.exit()
+
+            while True:
+                yn = input("Prune this org file? (yes/NO): ")
+                if yn.lower() == "yes":
+                    break
+                else:
+                    print("Prune cancelled...")
+                    sys.exit()
+            try:
+                os.remove(org_file)
+            except FileNotFoundError:
+                # This could happen if they fired up torgo, then didn't edit
+                # or save the org file. So it shouldn't be anything more than a
+                # warning.
+                print("WARN: Tried to remove the org file, but it wasn't found.")
+            db.remove(qh.hash == org)
+            print("Pruned this org file")
+        else:
+            if lookup is None:
+                lookup = {
+                    'hash': org,
+                    'path': str(path),
+                    'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
+                    }
+                db.insert(lookup)
             org_file = Path(cfg['TORGO']['org_dir'])
             org_file = org_file / lookup['org_file']
-        else:
-            print("No org file associated with this directory, nothing to " +
-                  "prune.")
-            sys.exit()
-
-        while True:
-            yn = input("Prune this org file? (yes/NO): ")
-            if yn.lower() == "yes":
-                break
-            else:
-                print("Prune cancelled...")
-                sys.exit()
-        try:
-            os.remove(org_file)
-        except FileNotFoundError:
-            # This could happen if they fired up torgo, then didn't edit
-            # or save the org file. So it shouldn't be anything more than a
-            # warning.
-            print("WARN: Tried to remove the org file, but it wasn't found.")
-        db.remove(qh.hash == org)
-        print("Pruned this org file")
-    else:
-        if lookup is None:
-            lookup = {
-                'hash': org,
-                'path': str(path),
-                'org_file': '{0}.{1}'.format(org, cfg['TORGO']['ext'])
-                }
-            db.insert(lookup)
-        org_file = Path(cfg['TORGO']['org_dir'])
-        org_file = org_file / lookup['org_file']
-        sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
+            sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
