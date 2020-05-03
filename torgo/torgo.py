@@ -23,7 +23,7 @@ def get_max_columns():
     return int(max_columns)
 
 
-def init_config():
+def init_config(cfg, torgo_cfg):
     """ Initializes the config (will wipe-out anything there)"""
     init()
 
@@ -304,7 +304,7 @@ def main():
         must_init = True
 
     if must_init or args.init:
-        init_config()
+        init_config(cfg, torgo_cfg)
 
     editor = cfg['TORGO']['editor']
     if editor == '':
