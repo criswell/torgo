@@ -133,8 +133,8 @@ class Torgo:
             sys.exit(1)
         if "tags" in self.lookup:
             all_tags = self.lookup["tags"]
-        if args.param:
-            tags = args.param.split(",")
+        if self.args.param:
+            tags = self.args.param.split(",")
             for t in tags:
                 if t.startswith("."):
                     temp_t = t.lstrip(".")
@@ -147,7 +147,7 @@ class Torgo:
             self.lookup["tags"] = all_tags
             q = Query()
             # FIXME : update or upsert?
-            db.update(self.lookup, q.hash == self.lookup["hash"])
+            self.db.update(self.lookup, q.hash == self.lookup["hash"])
         else:
             if len(all_tags) > 0:
                 print("The tags associated with this org file:")
@@ -186,23 +186,23 @@ class Torgo:
 
         return s + ", ".join(th) + "]"
 
-    def cmd_search():
+    def cmd_search(self):
         """ Searches the data base (and org files?) for something """
-        if args.param:
+        if self.args.param:
             qs = Query()
             try:
-                (stype, sparm) = args.param.split("=")
+                (stype, sparm) = self.args.param.split("=")
             except ValueError as exc:
                 # Hopefully a single search type
-                stype = args.param
+                stype = self.args.param
                 sparm = None
             if stype == "tag":
                 if sparm is None:
                     print("No tags to sarch with!")
-                    print_search_params()
+                    self.print_search_params()
                     sys.exit(1)
                 tags = set(sparm.split(","))
-                recs = db.search(qs.tags.any(tags))
+                recs = self.db.search(qs.tags.any(tags))
                 if len(recs) > 0:
                     print(
                         "Found {0} record(s) with the following tag(s):".format(
@@ -215,7 +215,7 @@ class Torgo:
                     for r in recs:
                         print(
                             "Path: {0} | {1}".format(
-                                r["path"], highlight_tags(r, tags)
+                                r["path"], self.highlight_tags(r, tags)
                             )
                         )
                 else:
@@ -223,17 +223,19 @@ class Torgo:
             elif stype == "all":
                 # This may suck if the thing is huge...
                 print(
-                    "There are {0} org files being managed.\n".format(len(db))
+                    "There are {0} org files being managed.\n".format(
+                        len(self.db)
+                    )
                 )
-                for r in db.all():
+                for r in self.db.all():
                     print("Path: {0}".format(r["path"]))
             else:
                 print("Unknown search type '{0}'".format(stype))
-                print_search_params()
+                self.print_search_params()
                 sys.exit(1)
         else:
             print("No search parameter found!")
-            print_search_params()
+            self.print_search_params()
             sys.exit(1)
 
     def start(self):
