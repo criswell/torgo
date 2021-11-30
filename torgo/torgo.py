@@ -17,16 +17,18 @@ from tinydb import TinyDB, Query
 def get_max_columns():
     max_columns = None
     try:
-        max_columns = subprocess.check_output(['tput', 'cols'])
+        max_columns = subprocess.check_output(["tput", "cols"])
     except (subprocess.CalledProcessError, FileNotFoundError):
-        max_columns = os.environ.get('COLUMNS', 70)
+        max_columns = os.environ.get("COLUMNS", 70)
     return int(max_columns)
+
 
 def get_hash(p):
     """ Given a path object, get a hash for it. """
     h = blake2b()
-    h.update(str(p).encode('utf-8'))
+    h.update(str(p).encode("utf-8"))
     return h.hexdigest()
+
 
 def mkdir_p(path):
     """ Equivalent of mkdir -p """
@@ -36,8 +38,8 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
 
-class Torgo:
 
+class Torgo:
     def __init__(self):
         self.cfg = None
         self.torgo_cfg = None
@@ -50,9 +52,14 @@ class Torgo:
         init()
 
         print(
-            Style.RESET_ALL + Style.BRIGHT + "TORGO CONFIGURATION INITIALIZATION\n"
+            Style.RESET_ALL
+            + Style.BRIGHT
+            + "TORGO CONFIGURATION INITIALIZATION\n"
         )
-        print(Style.RESET_ALL + "Please enter your desired configuration settings,")
+        print(
+            Style.RESET_ALL
+            + "Please enter your desired configuration settings,"
+        )
         print("defaults are in hard brackets\n")
 
         print(Style.BRIGHT + Fore.GREEN + "Torgo Org Directory:")
@@ -60,7 +67,7 @@ class Torgo:
         user_org = input(
             Style.RESET_ALL + "[" + Style.DIM + org_dir + Style.RESET_ALL + "] "
         )
-        if user_org == '':
+        if user_org == "":
             user_org = org_dir
 
         print(
@@ -81,21 +88,21 @@ class Torgo:
             Style.RESET_ALL + "[" + Style.DIM + "org" + Style.RESET_ALL + "] "
         )
 
-        if ext == '':
+        if ext == "":
             ext = "org"
 
-        self.cfg['TORGO'] = {}
-        self.cfg['TORGO']['org_dir'] = user_org
-        self.cfg['TORGO']['editor'] = editor
-        self.cfg['TORGO']['ext'] = ext
-        with open(self.torgo_cfg, 'w') as f:
+        self.cfg["TORGO"] = {}
+        self.cfg["TORGO"]["org_dir"] = user_org
+        self.cfg["TORGO"]["editor"] = editor
+        self.cfg["TORGO"]["ext"] = ext
+        with open(self.torgo_cfg, "w") as f:
             self.cfg.write(f)
 
     def find_org(self, path):
-        """ Given a path, attempt to find an org file already created for
+        """Given a path, attempt to find an org file already created for
         the path or its parents. Return the hash associated with the org file.
         If no parents have an org file, or if the '-t' arg is passed, then
-        we just return the hash associated original path. """
+        we just return the hash associated original path."""
         orig_path = path.resolve()
         org_hash = get_hash(orig_path)
         h = org_hash
@@ -114,7 +121,6 @@ class Torgo:
 
         return org_hash, orig_path
 
-
     # The commands
     def cmd_tag(self):
         """ The tag command function. """
@@ -125,23 +131,23 @@ class Torgo:
                 + "actually created an org file (after you first edit it)"
             )
             sys.exit(1)
-        if 'tags' in self.lookup:
-            all_tags = self.lookup['tags']
+        if "tags" in self.lookup:
+            all_tags = self.lookup["tags"]
         if args.param:
-            tags = args.param.split(',')
+            tags = args.param.split(",")
             for t in tags:
-                if t.startswith('.'):
-                    temp_t = t.lstrip('.')
+                if t.startswith("."):
+                    temp_t = t.lstrip(".")
                     if temp_t in all_tags:
                         all_tags.remove(temp_t)
                 else:
                     if t not in all_tags:
                         all_tags.append(t)
 
-            self.lookup['tags'] = all_tags
+            self.lookup["tags"] = all_tags
             q = Query()
             # FIXME : update or upsert?
-            db.update(self.lookup, q.hash == self.lookup['hash'])
+            db.update(self.lookup, q.hash == self.lookup["hash"])
         else:
             if len(all_tags) > 0:
                 print("The tags associated with this org file:")
@@ -149,7 +155,6 @@ class Torgo:
                     print("\t{0}".format(t))
             else:
                 print("No tags associated with this org file.")
-
 
     def cmd_info(self):
         """ Prints information about this org file """
@@ -160,7 +165,6 @@ class Torgo:
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(self.lookup)
 
-
     def print_search_params(self):
         """ Print the search parameter instructions """
         print("\nPlease include one of the following:")
@@ -170,19 +174,17 @@ class Torgo:
         )
         print("\tall\tTo list all the org file records.")
 
-
     def highlight_tags(self, r, tags):
         """ Given a record, and tags, highlight the tags, returning a string """
         s = Style.RESET_ALL + "["
         th = []
-        for t in r['tags']:
+        for t in r["tags"]:
             if t in tags:
                 th.append(Style.BRIGHT + Fore.YELLOW + t + Style.RESET_ALL)
             else:
                 th.append(t)
 
         return s + ", ".join(th) + "]"
-
 
     def cmd_search():
         """ Searches the data base (and org files?) for something """
@@ -194,12 +196,12 @@ class Torgo:
                 # Hopefully a single search type
                 stype = args.param
                 sparm = None
-            if stype == 'tag':
+            if stype == "tag":
                 if sparm is None:
                     print("No tags to sarch with!")
                     print_search_params()
                     sys.exit(1)
-                tags = set(sparm.split(','))
+                tags = set(sparm.split(","))
                 recs = db.search(qs.tags.any(tags))
                 if len(recs) > 0:
                     print(
@@ -213,16 +215,18 @@ class Torgo:
                     for r in recs:
                         print(
                             "Path: {0} | {1}".format(
-                                r['path'], highlight_tags(r, tags)
+                                r["path"], highlight_tags(r, tags)
                             )
                         )
                 else:
                     print("Found 0 records...")
-            elif stype == 'all':
+            elif stype == "all":
                 # This may suck if the thing is huge...
-                print("There are {0} org files being managed.\n".format(len(db)))
+                print(
+                    "There are {0} org files being managed.\n".format(len(db))
+                )
                 for r in db.all():
-                    print("Path: {0}".format(r['path']))
+                    print("Path: {0}".format(r["path"]))
             else:
                 print("Unknown search type '{0}'".format(stype))
                 print_search_params()
@@ -232,38 +236,42 @@ class Torgo:
             print_search_params()
             sys.exit(1)
 
-
     def start(self):
         commands = {
-            'tag': {
-                'method': self.cmd_tag,
-                'desc': 'Sets or unsets a tag for the given org file. The '
-                + 'parameters are a comma separated list of tags to set '
-                + 'or unset. If called with no options, will list the '
+            "tag": {
+                "method": self.cmd_tag,
+                "desc": "Sets or unsets a tag for the given org file. The "
+                + "parameters are a comma separated list of tags to set "
+                + "or unset. If called with no options, will list the "
                 + 'tags. If tag is prefixed with a ".", it will unset tag.',
             },
-            'info': {
-                'method': self.cmd_info,
-                'desc': 'Prints the information for the given org file.',
+            "info": {
+                "method": self.cmd_info,
+                "desc": "Prints the information for the given org file.",
             },
-            'search': {
-                'method': self.cmd_search,
-                'desc': 'Search functionality. Use "tag=" followed by a comma '
+            "search": {
+                "method": self.cmd_search,
+                "desc": 'Search functionality. Use "tag=" followed by a comma '
                 + 'separated list of tags to search. Use "all" to list '
-                + 'all known org files.',
+                + "all known org files.",
             },
         }
 
-        parser = argparse.ArgumentParser(description="Org-file anywhere, managed")
-        parser.add_argument("command", help="The command to run", nargs='?')
+        parser = argparse.ArgumentParser(
+            description="Org-file anywhere, managed"
+        )
+        parser.add_argument("command", help="The command to run", nargs="?")
         parser.add_argument(
             "param",
             help="Optional param for commands, see "
             + "commands list for more information",
-            nargs='?',
+            nargs="?",
         )
         parser.add_argument(
-            "-l", "--list", help="List the commands available", action="store_true"
+            "-l",
+            "--list",
+            help="List the commands available",
+            action="store_true",
         )
         parser.add_argument(
             "-t",
@@ -289,16 +297,16 @@ class Torgo:
             key_len = len(max(commands.keys(), key=len))
             desc_len = get_max_columns() - 5 - key_len
             for cmd in sorted(commands.keys()):
-                desc = textwrap.wrap(commands[cmd]['desc'], desc_len)
-                print('  {0} : {1}'.format(cmd.rjust(key_len), desc[0]))
+                desc = textwrap.wrap(commands[cmd]["desc"], desc_len)
+                print("  {0} : {1}".format(cmd.rjust(key_len), desc[0]))
                 for i in range(1, len(desc)):
-                    print(' ' * (5 + key_len) + '{0}'.format(desc[i]))
+                    print(" " * (5 + key_len) + "{0}".format(desc[i]))
             sys.exit(0)
 
         # Attempt to load the configuration
-        self.torgo_cfg = '{0}/.torgo.cfg'.format(str(Path.home()))
-        if 'TORGO_CFG' in os.environ:
-            self.torgo_cfg = os.environ['TORGO_CFG']
+        self.torgo_cfg = "{0}/.torgo.cfg".format(str(Path.home()))
+        if "TORGO_CFG" in os.environ:
+            self.torgo_cfg = os.environ["TORGO_CFG"]
 
         self.cfg = configparser.ConfigParser()
         must_init = False
@@ -311,10 +319,10 @@ class Torgo:
         if must_init or self.args.init:
             self.init_config()
 
-        editor = self.cfg['TORGO']['editor']
-        if editor == '':
-            if 'EDITOR' in os.environ:
-                editor = os.environ['EDITOR']
+        editor = self.cfg["TORGO"]["editor"]
+        if editor == "":
+            if "EDITOR" in os.environ:
+                editor = os.environ["EDITOR"]
             else:
                 print(
                     Style.RESET_ALL
@@ -328,12 +336,16 @@ class Torgo:
                     + "file '{0}' or".format(self.torgo_cfg)
                 )
                 print("in the environment variable $EDITOR.")
-                print("\nYou can re-run torgo with '-i' to force re-initialization")
+                print(
+                    "\nYou can re-run torgo with '-i' to force re-initialization"
+                )
                 sys.exit(1)
 
-        mkdir_p(self.cfg['TORGO']['org_dir'])
+        mkdir_p(self.cfg["TORGO"]["org_dir"])
 
-        self.db = TinyDB('{0}/org_lookup_db.json'.format(self.cfg['TORGO']['org_dir']))
+        self.db = TinyDB(
+            "{0}/org_lookup_db.json".format(self.cfg["TORGO"]["org_dir"])
+        )
 
         org, path = self.find_org(Path.cwd())
 
@@ -341,12 +353,12 @@ class Torgo:
         self.lookup = self.db.get(qh.hash == org)
 
         if self.args.command in commands:
-            commands[self.args.command]['method']()
+            commands[self.args.command]["method"]()
         else:
             if self.args.prune:
                 if self.lookup:
-                    org_file = Path(self.cfg['TORGO']['org_dir'])
-                    org_file = org_file / self.lookup['org_file']
+                    org_file = Path(self.cfg["TORGO"]["org_dir"])
+                    org_file = org_file / self.lookup["org_file"]
                 else:
                     print(
                         "No org file associated with this directory, nothing to "
@@ -375,11 +387,13 @@ class Torgo:
             else:
                 if self.lookup is None:
                     self.lookup = {
-                        'hash': org,
-                        'path': str(path),
-                        'org_file': '{0}.{1}'.format(org, self.cfg['TORGO']['ext']),
+                        "hash": org,
+                        "path": str(path),
+                        "org_file": "{0}.{1}".format(
+                            org, self.cfg["TORGO"]["ext"]
+                        ),
                     }
                     self.db.insert(self.lookup)
-                org_file = Path(self.cfg['TORGO']['org_dir'])
-                org_file = org_file / self.lookup['org_file']
-                sys.exit(os.system('{0} {1}'.format(editor, str(org_file))))
+                org_file = Path(self.cfg["TORGO"]["org_dir"])
+                org_file = org_file / self.lookup["org_file"]
+                sys.exit(os.system("{0} {1}".format(editor, str(org_file))))
